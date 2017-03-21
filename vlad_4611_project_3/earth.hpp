@@ -57,10 +57,21 @@ inline void Earth::initialize(Engine *e, int sl, int st, float sp) {
 	engine->copyVertexData(texCoordBuffer, &texCoords[0], nVertices * sizeof(vec2));
 	
 	vector<int> indices;
-	for (int i = 0; i < slices; i++) {
-		indices.push_back(i * 2);
-		indices.push_back(i * 2 + 2);
-		indices.push_back(i * 2 + 1);
+	for (int x = 0; x < slices; x++) {
+		for (int y = 0; y < stacks; y++) {
+/*
+			8
+			9
+			14
+*/
+			indices.push_back((y * (slices + 1)) + x);
+			indices.push_back((y * (slices + 1) + 1) + x);
+			indices.push_back((y * (slices + 1) + (slices + 1) + 2) + x);
+
+			indices.push_back(0);
+			indices.push_back(0);
+			indices.push_back(0);
+		}
 	}
 
 	int nIndices = nTriangles*3;

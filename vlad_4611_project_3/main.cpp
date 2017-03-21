@@ -12,8 +12,8 @@ using namespace std;
 using glm::vec3;
 using glm::vec4;
 
-const int slices = 60;
-const int stacks = 30;
+const int slices = 4;
+const int stacks = 2;
 
 class QuakeVis: public Engine {
 public:
