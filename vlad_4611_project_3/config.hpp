@@ -5,7 +5,7 @@
 
 namespace Config {
 
-    const std::string dataDir = "C:\\data\\";
+    const std::string dataDir = "C:\\data";
 
     const std::string textureFile = dataDir + "\\earth-2k.bmp";
 
