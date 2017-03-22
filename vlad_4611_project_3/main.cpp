@@ -35,7 +35,7 @@ public:
     QuakeVis() {
         window = createWindow("Earthquake Visualization", 1280, 720);
         camera = OrbitCamera(5, 0, 0, Perspective(40, 16/9., 0.1, 10));
-        float isSpherical = 1;
+        float isSpherical = 1.0;
         earth.initialize(this, slices, stacks, isSpherical);
         visualizeMesh = false;
         qdb = EarthquakeDatabase(Config::quakeFile);

@@ -68,12 +68,12 @@ inline void Earth::initialize(Engine *e, int sl, int st, float sp) {
 		for (int y = 0; y < stacks; y++) {
 
 			indices.push_back((x*(stacks + 1)) + y);
-			indices.push_back((x*(stacks + 1)) + y + (stacks + 1));
-			indices.push_back((x*(stacks + 1)) + y + (stacks + 1) + 1);
-
-			indices.push_back((x*(stacks + 1)) + y);
 			indices.push_back((x*(stacks + 1)) + y + (stacks + 1) + 1);
 			indices.push_back((x*(stacks + 1)) + y + 1);
+
+			indices.push_back((x*(stacks + 1)) + y);
+			indices.push_back((x*(stacks + 1)) + y + (stacks + 1));
+			indices.push_back((x*(stacks + 1)) + y + (stacks + 1) + 1);
 		}
 	}
 
@@ -99,7 +99,7 @@ inline void Earth::setSpherical(float s) {
 //X = Longitude will be between -180 to 180
 inline vec3 Earth::getPosition(float latitude, float longitude) {
 	vec3 rectangularPosition((longitude / 180)* M_PI, (latitude / 90)* (M_PI / 2), 0);
-	vec3 sphericalPosition(cos(longitude)*sin(latitude), sin(longitude), cos(longitude)*cos(latitude));
+	vec3 sphericalPosition(cos(glm::radians(latitude))*sin(glm::radians(longitude)), sin(glm::radians(latitude)), cos(glm::radians(latitude))*cos(glm::radians(longitude)));
 	if (spherical == 0){
 		return rectangularPosition;
 	} else if (spherical == 1) {
@@ -112,7 +112,7 @@ inline vec3 Earth::getPosition(float latitude, float longitude) {
 inline vec3 Earth::getNormal(float latitude, float longitude) {
     vec3 rectangularNormal(0,0,0), sphericalNormal(0,0,0);
 
-	sphericalNormal = vec3(0, 0, 0) - getPosition(latitude, longitude);
+	sphericalNormal = getPosition(latitude, longitude) - vec3(0, 0, 0);
 
     // TODO compute vertex positions on rectangle and sphere
 
