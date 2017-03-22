@@ -3,6 +3,7 @@
 
 #include "engine.hpp"
 #include <vector>
+#include "glm/ext.hpp"
 using namespace std;
 using glm::vec2;
 using glm::vec3;
@@ -35,17 +36,23 @@ inline void Earth::initialize(Engine *e, int sl, int st, float sp) {
     stacks = st;
     spherical = sp;
 
-    // TODO: Initialize nVertices, nTriangles, buffers, texture
+	//setSpherical(0.5);
+
+
 	nVertices = (slices + 1)*(stacks + 1);
-	nTriangles = 2 * slices * stacks;
+	nTriangles = 2 * slices * stacks; // 2 triangles for every square. Slice*Stacks squares.
 
 	vector<vec3> vertices, normals;
 	vector<vec2> texCoords;
 	for (int x = 0; x <= slices; x++) {
 		for (int y = 0; y <= stacks; y++) {
-			vertices	.push_back(getPosition(-90 + (180)*x / slices, -180 + (360) * y / stacks));
-			normals		.push_back(getNormal(-90 + (180)*x / slices, -180 + (360) * y / stacks));
-			texCoords	.push_back(vec2(x / slices, y / stacks));
+			vertices	.push_back(getPosition(-90 + (180)*y / stacks, -180 + (360) * x / slices));
+			normals		.push_back(getNormal(-90 + (180)*y / stacks, -180 + (360) * x / slices));
+
+			float xcoord = (x / (float)slices);
+			float ycoord = (y / (float)stacks);
+			vec2 coords = vec2(xcoord, -ycoord);
+			texCoords.push_back(coords);
 		}
 	}
 	
@@ -59,18 +66,14 @@ inline void Earth::initialize(Engine *e, int sl, int st, float sp) {
 	vector<int> indices;
 	for (int x = 0; x < slices; x++) {
 		for (int y = 0; y < stacks; y++) {
-/*
-			8
-			9
-			14
-*/
-			indices.push_back((y * (slices + 1)) + x);
-			indices.push_back((y * (slices + 1) + 1) + x);
-			indices.push_back((y * (slices + 1) + (slices + 1) + 2) + x);
 
-			indices.push_back(0);
-			indices.push_back(0);
-			indices.push_back(0);
+			indices.push_back((x*(stacks + 1)) + y);
+			indices.push_back((x*(stacks + 1)) + y + (stacks + 1));
+			indices.push_back((x*(stacks + 1)) + y + (stacks + 1) + 1);
+
+			indices.push_back((x*(stacks + 1)) + y);
+			indices.push_back((x*(stacks + 1)) + y + (stacks + 1) + 1);
+			indices.push_back((x*(stacks + 1)) + y + 1);
 		}
 	}
 
@@ -92,20 +95,17 @@ inline void Earth::setSpherical(float s) {
 
 }
 
-//Latitude will be from -90 to 90
-//Longitude will be between -180 to 180
+//Y = Latitude will be from -90 to 90
+//X = Longitude will be between -180 to 180
 inline vec3 Earth::getPosition(float latitude, float longitude) {
+	vec3 rectangularPosition((longitude / 180)* M_PI, (latitude / 90)* (M_PI / 2), 0);
+	vec3 sphericalPosition(cos(latitude)*sin(longitude), sin(latitude), cos(latitude)*cos(longitude));
 	if (spherical == 0){
-		vec3 rectangularPosition((longitude / 180)* M_PI, (latitude / 90)* (M_PI / 2), 0);
 		return rectangularPosition;
 	} else if (spherical == 1) {
-		vec3 sphericalPosition(0, 0, 0);
 		return sphericalPosition;
 	} else {
-
-        // TODO compute the interpolated position
-        return vec3(0,0,0);
-
+		return glm::lerp(sphericalPosition, rectangularPosition, spherical);;
     }
 }
 
@@ -140,6 +140,9 @@ inline void Earth::draw(bool textured) {
 		engine->setTexture(texture);
 	
 	engine->drawElements(GL_TRIANGLES, indexBuffer, nTriangles*3);
+	
+	if (textured)
+		engine->unsetTexture();
 }
 
 #endif

@@ -12,8 +12,8 @@ using namespace std;
 using glm::vec3;
 using glm::vec4;
 
-const int slices = 4;
-const int stacks = 2;
+const int slices = 40;
+const int stacks = 20;
 
 class QuakeVis: public Engine {
 public:
@@ -22,7 +22,8 @@ public:
     OrbitCamera camera;
 
     Earth earth;
-    bool visualizeMesh;
+	bool visualizeMesh;
+	bool switching;
     EarthquakeDatabase qdb;
 
     float currentTime;
@@ -144,8 +145,10 @@ public:
             playSpeed *= 1.4;
         if (e.keysym.scancode == SDL_SCANCODE_SPACE)
             playing = !playing;
-        if (e.keysym.scancode == SDL_SCANCODE_M)
-            visualizeMesh = !visualizeMesh;
+		if (e.keysym.scancode == SDL_SCANCODE_M)
+			visualizeMesh = !visualizeMesh;
+		if (e.keysym.scancode == SDL_SCANCODE_S)
+			switching = !switching;
 
         // TODO: Switch between rectangle and sphere on pressing S
 
