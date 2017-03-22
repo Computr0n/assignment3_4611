@@ -23,7 +23,7 @@ public:
 
     Earth earth;
 	bool visualizeMesh;
-	bool switching;
+	bool goingToSphere;
     EarthquakeDatabase qdb;
 
     float currentTime;
@@ -35,7 +35,7 @@ public:
     QuakeVis() {
         window = createWindow("Earthquake Visualization", 1280, 720);
         camera = OrbitCamera(5, 0, 0, Perspective(40, 16/9., 0.1, 10));
-        float isSpherical = 0;
+        float isSpherical = 1;
         earth.initialize(this, slices, stacks, isSpherical);
         visualizeMesh = false;
         qdb = EarthquakeDatabase(Config::quakeFile);
@@ -75,7 +75,18 @@ public:
         }
 
         // TODO: Adjust the Earth's isSpherical value if necessary.
-
+		if (earth.isSpherical() < 1.0 && goingToSphere) {
+			earth.setSpherical(earth.isSpherical() + 0.1);
+		}
+		else if (earth.isSpherical() > 0.0 && !goingToSphere) {
+			earth.setSpherical(earth.isSpherical() - 0.1);
+		}
+		else if (earth.isSpherical() >= 1.0 && goingToSphere) {
+			earth.setSpherical(1.0);
+		}
+		else if (earth.isSpherical() <= 0.0 && !goingToSphere) {
+			earth.setSpherical(0.0);
+		}
     }
 
     void addLight(GLenum light, vec4 position, vec3 color) {
@@ -118,6 +129,7 @@ public:
 
             // TODO: Draw an earthquake
 
+
         }
         // Draw current date
         Date d(currentTime);
@@ -148,7 +160,7 @@ public:
 		if (e.keysym.scancode == SDL_SCANCODE_M)
 			visualizeMesh = !visualizeMesh;
 		if (e.keysym.scancode == SDL_SCANCODE_S)
-			switching = !switching;
+			goingToSphere = !goingToSphere;
 
         // TODO: Switch between rectangle and sphere on pressing S
 
