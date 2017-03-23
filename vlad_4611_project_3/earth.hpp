@@ -16,6 +16,7 @@ public:
     vec3 getPosition(float latitude, float longitude);
     vec3 getNormal(float latitude, float longitude);
     void draw(bool textured);
+	void updateBuffers();
 protected:
     int slices, stacks;
     int nVertices, nTriangles;
@@ -25,8 +26,9 @@ protected:
     // TODO: Define the necessary buffers and texture.
     // Feel free to add helper methods to update the buffers.
 
-    VertexBuffer vertexBuffer, normalBuffer, texCoordBuffer;
-    ElementBuffer indexBuffer;
+	VertexBuffer vertexBuffer, normalBuffer, texCoordBuffer;
+	VertexBuffer vertexUpdateBuffer, normalUpdateBuffer;
+	ElementBuffer indexBuffer;
     Texture texture;
 };
 
@@ -36,7 +38,9 @@ inline void Earth::initialize(Engine *e, int sl, int st, float sp) {
     stacks = st;
     spherical = sp;
 
-	//setSpherical(0.5);
+	//create buffers for storing new positions for when it comes time to update the position or the normals
+	vertexUpdateBuffer = engine->allocateVertexBuffer(nVertices * sizeof(vec3));
+	normalUpdateBuffer = engine->allocateVertexBuffer(nVertices * sizeof(vec3));
 
 
 	nVertices = (slices + 1)*(stacks + 1);
@@ -105,14 +109,14 @@ inline vec3 Earth::getPosition(float latitude, float longitude) {
 	} else if (spherical == 1) {
 		return sphericalPosition;
 	} else {
-		return glm::lerp(sphericalPosition, rectangularPosition, spherical);;
+		return glm::lerp(rectangularPosition, sphericalPosition, spherical);;
     }
 }
 
 inline vec3 Earth::getNormal(float latitude, float longitude) {
-    vec3 rectangularNormal(0,0,0), sphericalNormal(0,0,0);
+    vec3 rectangularNormal(0,0,1), sphericalNormal(0,0,0);
 
-	sphericalNormal = getPosition(latitude, longitude) - vec3(0, 0, 0);
+	sphericalNormal = (getPosition(latitude, longitude) - vec3(0, 0, 0));
 
     // TODO compute vertex positions on rectangle and sphere
 
@@ -124,7 +128,7 @@ inline vec3 Earth::getNormal(float latitude, float longitude) {
     } else {
 
         // TODO compute the interpolated normal
-		return glm::lerp(sphericalNormal, rectangularNormal, spherical);;
+		return glm::lerp(rectangularNormal, sphericalNormal, spherical);;
 
     }
 }
@@ -145,6 +149,24 @@ inline void Earth::draw(bool textured) {
 	
 	if (textured)
 		engine->unsetTexture();
+}
+
+inline void Earth::updateBuffers()
+{
+	vector<vec3> vertices, normals;
+	for (int x = 0; x <= slices; x++) {
+		for (int y = 0; y <= stacks; y++) {
+			vertices.push_back(getPosition(-90 + (180)*y / stacks, -180 + (360) * x / slices));
+			normals.push_back(getNormal(-90 + (180)*y / stacks, -180 + (360) * x / slices));
+
+			float xcoord = (x / (float)slices);
+			float ycoord = (y / (float)stacks);
+			vec2 coords = vec2(xcoord, -ycoord);
+		}
+	}
+
+	engine->copyVertexData(vertexBuffer, &vertices[0], nVertices * sizeof(vec3));
+	engine->copyVertexData(normalBuffer, &normals[0], nVertices * sizeof(vec3));\
 }
 
 #endif

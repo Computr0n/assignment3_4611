@@ -98,9 +98,11 @@ namespace Draw {
 
     inline void sphere(vec3 p, float r) {
         glPushMatrix();
+		glColor3f(1, 0, 0);
         glTranslatef(p.x,p.y,p.z);
         glScalef(r,r,r);
         unitSphere();
+		glColor3f(1, 1, 1);
         glPopMatrix();
     }
 

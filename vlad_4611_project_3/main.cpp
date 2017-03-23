@@ -23,7 +23,9 @@ public:
 
     Earth earth;
 	bool visualizeMesh;
-	bool goingToSphere;
+	bool lerpToSphere	= true;
+	bool lerpToRect		= false;
+	bool lerping		= false;
     EarthquakeDatabase qdb;
 
     float currentTime;
@@ -43,7 +45,7 @@ public:
 			errorMessage(("Failed to open earthquake file " + Config::quakeFile).c_str());
 			exit(EXIT_FAILURE);
 		}
-        playSpeed = 30*24*3600;
+        playSpeed = 30*24*36000;
         currentTime = qdb.getByIndex(qdb.getMinIndex()).getDate().asSeconds();
         playing = true;
         text.initialize();
@@ -75,17 +77,26 @@ public:
         }
 
         // TODO: Adjust the Earth's isSpherical value if necessary.
-		if (earth.isSpherical() < 1.0 && goingToSphere) {
-			earth.setSpherical(earth.isSpherical() + 0.1);
-		}
-		else if (earth.isSpherical() > 0.0 && !goingToSphere) {
-			earth.setSpherical(earth.isSpherical() - 0.1);
-		}
-		else if (earth.isSpherical() >= 1.0 && goingToSphere) {
-			earth.setSpherical(1.0);
-		}
-		else if (earth.isSpherical() <= 0.0 && !goingToSphere) {
-			earth.setSpherical(0.0);
+		
+		if (lerping)
+		{
+			if (lerpToRect) {
+				earth.setSpherical(earth.isSpherical() - 0.01);
+			}
+			else if (lerpToSphere) {
+				earth.setSpherical(earth.isSpherical() + 0.01);
+			}
+
+			if (earth.isSpherical() > 1.0) {
+				earth.setSpherical(1.0);
+				lerping = false;
+			}
+			else if (earth.isSpherical() < 0.0) {
+				earth.setSpherical(0.0);
+				lerping = false;
+			}
+
+			earth.updateBuffers();
 		}
     }
 
@@ -126,8 +137,9 @@ public:
         int end = qdb.getIndexByDate(Date(currentTime));
         for (int i = start; i <= end; i++) {
             Earthquake e = qdb.getByIndex(i);
-
+			float quakeSize = (e.getMagnitude()-10)*.01;
             // TODO: Draw an earthquake
+			Draw::sphere(earth.getPosition(e.getLatitude(), e.getLongitude()), quakeSize);
 
 
         }
@@ -159,8 +171,11 @@ public:
             playing = !playing;
 		if (e.keysym.scancode == SDL_SCANCODE_M)
 			visualizeMesh = !visualizeMesh;
-		if (e.keysym.scancode == SDL_SCANCODE_S)
-			goingToSphere = !goingToSphere;
+		if (e.keysym.scancode == SDL_SCANCODE_S) {
+			lerping = true;
+			lerpToRect = !lerpToRect;
+			lerpToSphere = !lerpToSphere;
+		}
 
         // TODO: Switch between rectangle and sphere on pressing S
 
